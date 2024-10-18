@@ -28,9 +28,8 @@
  */
 
 //package org.firstinspires.ftc.robotcontroller.external.samples;
-package org.firstinspires.ftc.team23442;
+package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -69,7 +68,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOpTest")
+@TeleOp(name="TeleOp-Team23442")
 public class TeleOpTest extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -79,7 +78,7 @@ public class TeleOpTest extends LinearOpMode {
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
     private DcMotorEx  armMotor = null; //the arm motor
-    private CRServo intake = null; //the active intake servo
+    private GrabberCont intake = null; //the active intake servo
     private Servo wrist = null; //the wrist servo
 
     @Override
@@ -131,6 +130,9 @@ public class TeleOpTest extends LinearOpMode {
         final double INTAKE_COLLECT    = -1.0;
         final double INTAKE_OFF        =  0.0;
         final double INTAKE_DEPOSIT    =  0.5;
+        final int INTAKE_MAX_TIME_DURATION    =  5000; // 5s
+        final int INTAKE_MIN_TIME_DURATION    =  300; // 200ms
+        final int INTAKE_1S_TIME_DURATION    =  2000; // 1ms
 
         /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
         final double WRIST_FOLDED_IN   = 0.8333;
@@ -159,10 +161,12 @@ public class TeleOpTest extends LinearOpMode {
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         /* Define and initialize servos.*/
-        intake = hardwareMap.get(CRServo.class, "intake");
+        intake = new GrabberCont(hardwareMap, "intake");
+        //intake = hardwareMap.get(CRServo.class, "intake");
         wrist  = hardwareMap.get(Servo.class, "wrist");
 
         /* Make sure that the intake is off, and the wrist is folded in. */
+        //intake.setPower(INTAKE_OFF);
         intake.setPower(INTAKE_OFF);
         wrist.setPosition(WRIST_FOLDED_IN);
 
@@ -267,14 +271,13 @@ public class TeleOpTest extends LinearOpMode {
             one cycle. Which can cause strange behavior. */
 
             if (gamepad1.a) {
-                intake.setPower(INTAKE_COLLECT);
-
+                intake.setPowerTime(INTAKE_COLLECT, INTAKE_MAX_TIME_DURATION);
             }
             else if (gamepad1.x) {
                 intake.setPower(INTAKE_OFF);
             }
             else if (gamepad1.b) {
-                intake.setPower(INTAKE_DEPOSIT);
+                intake.setPowerTime(INTAKE_DEPOSIT, INTAKE_1S_TIME_DURATION);
             }
 
             if(gamepad1.right_bumper){
@@ -292,8 +295,8 @@ public class TeleOpTest extends LinearOpMode {
             if(gamepad1.right_bumper){
                 /* This is the intaking/collecting arm position */
                 armPosition = ARM_COLLECT;
-                wrist.setPosition(WRIST_FOLDED_OUT);
-                intake.setPower(INTAKE_COLLECT);
+                //wrist.setPosition(WRIST_FOLDED_OUT);
+                intake.setPowerTime(INTAKE_COLLECT, INTAKE_MAX_TIME_DURATION);
             }
 
             else if (gamepad1.left_bumper){
