@@ -15,7 +15,7 @@ public class GrabberCont {
 	 * @param hardwareMap the hardwareMap of the current running OpMode
 	 */
 	public GrabberCont( HardwareMap hardwareMap ) {
-		setup( hardwareMap, "grabber" );
+		setup( hardwareMap, "intake" );
 	}
 
 	/**
