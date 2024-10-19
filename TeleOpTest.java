@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -225,6 +226,7 @@ public class TeleOpTest extends LinearOpMode {
             double rightBackPower  = axial + lateral - yaw;
 
             double intakePower = INTAKE_OFF;
+            DcMotorSimple.Direction intakeDirection = DcMotorSimple.Direction.FORWARD;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -285,10 +287,11 @@ public class TeleOpTest extends LinearOpMode {
 
             if (gamepad1.a) {
                 if (!crServoRunning) {
-                    intake.setPower(INTAKE_COLLECT);
+                    intakePower = INTAKE_COLLECT;
+                    intake.setPower(intakePower);
+                    intake.setDirection(intakeDirection);
                     crServoRunning = true;           // Set flag to indicate CRServo should run
                     crServoRunTime = INTAKE_COLLECT_TIME_DURATION;
-                    intakePower = INTAKE_COLLECT;
                 }
                 runtime.reset();
             }
@@ -297,8 +300,10 @@ public class TeleOpTest extends LinearOpMode {
             }
             else if (gamepad1.b) {
                 intakePower = INTAKE_DEPOSIT;
+                intakeDirection = DcMotorSimple.Direction.REVERSE;
                 if (!crServoRunning) {
                     intake.setPower(intakePower);
+                    intake.setDirection(intakeDirection);
                     crServoRunning = true;           // Set flag to indicate CRServo should run
                     crServoRunTime = INTAKE_DEPOSIT_TIME_DURATION;
                 }
@@ -308,10 +313,10 @@ public class TeleOpTest extends LinearOpMode {
             // Run the CRServo if the flag is set and check the time
             if (crServoRunning) {
                 intake.setPower(intakePower);
+                intake.setDirection(intakeDirection);
                 if (runtime.seconds() >= crServoRunTime) {
                     intake.setPower(INTAKE_OFF);
                     crServoRunning = false;
-                    intakePower = INTAKE_OFF;
                 }
             }
 
