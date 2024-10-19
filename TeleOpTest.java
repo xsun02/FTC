@@ -37,7 +37,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 /*
  * This file contains an example of a Linear "OpMode".
@@ -127,6 +126,9 @@ public class TeleOpTest extends LinearOpMode {
         final double ARM_SCORE_SAMPLE_IN_LOW   = 160 * ARM_TICKS_PER_DEGREE;
         final double ARM_ATTACH_HANGING_HOOK   = 120 * ARM_TICKS_PER_DEGREE;
         final double ARM_WINCH_ROBOT           = 15  * ARM_TICKS_PER_DEGREE;
+        final int INTAKE_COLLECT_TIME_DURATION    =  5; // 5s
+        final int INTAKE_DEPOSIT_TIME_DURATION    =  2; // 5s
+        final int INTAKE_MIN_TIME_DURATION    =  1; // 1s
 
         /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
         final double INTAKE_COLLECT    = -1.0;
@@ -222,6 +224,8 @@ public class TeleOpTest extends LinearOpMode {
             double leftBackPower   = axial - lateral + yaw;
             double rightBackPower  = axial + lateral - yaw;
 
+            double intakePower = INTAKE_OFF;
+
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
             max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
@@ -283,23 +287,31 @@ public class TeleOpTest extends LinearOpMode {
                 if (!crServoRunning) {
                     intake.setPower(INTAKE_COLLECT);
                     crServoRunning = true;           // Set flag to indicate CRServo should run
-                    crServoRunTime = 5.0;            // Set the CRServo run time in seconds
+                    crServoRunTime = INTAKE_COLLECT_TIME_DURATION;
+                    intakePower = INTAKE_COLLECT;
                 }
-                runtime.reset();                 // Reset the timer
+                runtime.reset();
             }
             else if (gamepad1.x) {
                 intake.setPower(INTAKE_OFF);
             }
             else if (gamepad1.b) {
-                intake.setPower(INTAKE_DEPOSIT);
+                intakePower = INTAKE_DEPOSIT;
+                if (!crServoRunning) {
+                    intake.setPower(intakePower);
+                    crServoRunning = true;           // Set flag to indicate CRServo should run
+                    crServoRunTime = INTAKE_DEPOSIT_TIME_DURATION;
+                }
+                runtime.reset();
             }
 
             // Run the CRServo if the flag is set and check the time
             if (crServoRunning) {
-                intake.setPower(1.0);
+                intake.setPower(intakePower);
                 if (runtime.seconds() >= crServoRunTime) {
-                    intake.setPower(0.0);
+                    intake.setPower(INTAKE_OFF);
                     crServoRunning = false;
+                    intakePower = INTAKE_OFF;
                 }
             }
 
